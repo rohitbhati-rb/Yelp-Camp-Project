@@ -16,12 +16,16 @@ const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const ExpressError = require('./utils/ExpressError');
 const User = require('./models/user');
+const MongoStore = require('connect-mongo')(session);
 
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
 const reviewRoutes = require('./routes/reviews');
 
-mongoose.connect('mongodb://localhost:27017/yelp-camp', {
+// const dbUrl = process.env.DB_URL;
+const dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/yelp-camp';
+// 'mongodb://localhost:27017/yelp-camp'
+mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,
@@ -88,10 +92,19 @@ app.use(
         },
     })
 );
-
+const secret = process.env.SECRET || 'thisshouldbeabettersecret' ;
+const store = new MongoStore({
+    url:dbUrl,
+    secret,
+    toucAfter: 26*60*60
+});
+store.on('error', function(e){
+    console.log('SessionStore Error', e);
+})
 const sessionConfig = {
-    name: 'hehe',
-    secret: 'thisshouldbeabettersecret',
+    store,
+    name: 'session',
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
