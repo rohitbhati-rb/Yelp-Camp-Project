@@ -16,7 +16,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const ExpressError = require('./utils/ExpressError');
 const User = require('./models/user');
-const MongoStore = require('connect-mongo')(session);
+const MongoStore = require('connect-mongo');
 
 const userRoutes = require('./routes/users');
 const campgroundRoutes = require('./routes/campgrounds');
@@ -93,8 +93,8 @@ app.use(
     })
 );
 const secret = process.env.SECRET || 'thisshouldbeabettersecret' ;
-const store = new MongoStore({
-    url:dbUrl,
+const store = MongoStore.create({
+    mongoUrl:dbUrl,
     secret,
     toucAfter: 26*60*60
 });
